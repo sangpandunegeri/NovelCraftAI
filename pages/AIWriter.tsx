@@ -56,7 +56,7 @@ const AIWriter: React.FC = () => {
     const isLocked = isFirstChapterWritten && !isAiWriterUnlocked;
 
     const handleUnlock = () => {
-        if (window.confirm("Membuka kunci asisten akan mereset semua pilihan perancangan novel dan memungkinkan Anda untuk memulai dari awal untuk menimpa Bab 1. Apakah Anda yakin ingin melanjutkan?")) {
+        if (window.confirm("Ini akan mereset semua pilihan perancangan novel (Genre, Premis, dll.) dan memungkinkan Anda memulai dari Langkah 1. Konten Bab 1 yang ada dapat ditimpa. Lanjutkan?")) {
             dispatch({ type: 'RESET_WIZARD_STATE' });
             setSelectedCharacters([]);
             setAiSuggestions(null);

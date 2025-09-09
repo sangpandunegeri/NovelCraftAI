@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import type { Page } from '../types';
 import { useNovel } from '../context/NovelContext';
@@ -6,6 +5,7 @@ import { useNovel } from '../context/NovelContext';
 interface SidebarProps {
   currentPage: Page;
   setCurrentPage: (page: Page) => void;
+  onSettingsClick: () => void;
 }
 
 const SidebarLink: React.FC<{
@@ -34,7 +34,7 @@ const SidebarLink: React.FC<{
   );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage, onSettingsClick }) => {
     const { novelData, saveProjectToFile, loadProjectFromFile, resetProject, resetApplication } = useNovel();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,12 +53,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
         if (window.confirm('Apakah Anda yakin ingin memulai proyek baru? Semua data proyek saat ini akan dihapus secara permanen.')) {
             resetProject();
             setCurrentPage('ai-writer');
-        }
-    };
-
-    const handleResetApplication = () => {
-        if (window.confirm('PERINGATAN: Tindakan ini akan menghapus SEMUA data proyek dari browser Anda secara permanen. Ini tidak dapat diurungkan. Apakah Anda benar-benar yakin ingin melanjutkan?')) {
-            resetApplication();
         }
     };
 
@@ -111,8 +105,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
             <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleFileChange} />
         </div>
         
-        <div className="border-t border-white/20 pt-4 mt-4">
-             <button onClick={handleResetApplication} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors" title="Hapus semua data dan mulai dari awal">
+        <div className="border-t border-white/20 pt-4 mt-4 space-y-2">
+            <button onClick={onSettingsClick} className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors" title="Pengaturan Aplikasi">
+                <i className="fas fa-cog"></i>Pengaturan
+            </button>
+             <button onClick={resetApplication} className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg text-sm flex items-center justify-center gap-2 transition-colors" title="Hapus semua data dan mulai dari awal">
                 <i className="fas fa-power-off"></i>Reset Aplikasi
             </button>
         </div>

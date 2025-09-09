@@ -1,18 +1,35 @@
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 import type { Character, Location, NovelObject } from '../types';
 
-const API_KEY = AIzaSyDLCjC3k8fa9nLP0yMhu3pN9lTo8-lJhvQ;
+let ai: GoogleGenAI | null = null;
 
-if (!API_KEY) {
-  throw new Error("API_KEY environment variable not set");
-}
+export const initializeGemini = (apiKey: string) => {
+    if (!apiKey) {
+        console.warn("Kunci API Gemini tidak diberikan. Layanan AI dinonaktifkan.");
+        ai = null;
+        return;
+    }
+    try {
+        ai = new GoogleGenAI({ apiKey });
+    } catch (error) {
+        console.error("Gagal menginisialisasi Gemini dengan API key yang diberikan:", error);
+        ai = null;
+    }
+};
 
-const ai = new GoogleGenAI({ apiKey: API_KEY });
-const model = ai.models;
+const getModel = () => {
+    if (!ai) {
+        throw new Error("Layanan AI belum diinisialisasi. Silakan atur API Key Anda di Pengaturan.");
+    }
+    return ai.models;
+};
 
 const getErrorMessage = (error: unknown): string => {
     if (error instanceof Error) {
         const lowerCaseMessage = error.message.toLowerCase();
+        if (lowerCaseMessage.includes('api key not valid')) {
+            return 'API Key tidak valid. Silakan periksa kunci Anda di Pengaturan.';
+        }
         if (lowerCaseMessage.includes('failed to fetch') || lowerCaseMessage.includes('networkerror')) {
             return 'Tidak dapat terhubung ke layanan AI. Silakan periksa koneksi internet Anda dan coba lagi.';
         }
@@ -49,6 +66,7 @@ Babak 3 (Penyelesaian): [Teks Anda di sini]
 `;
 
     try {
+        const model = getModel();
         const response: GenerateContentResponse = await model.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -97,6 +115,7 @@ Hanya kembalikan respons dalam format JSON sesuai dengan skema yang diberikan.`;
     };
 
     try {
+        const model = getModel();
         const response: GenerateContentResponse = await model.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -117,6 +136,7 @@ Hanya kembalikan respons dalam format JSON sesuai dengan skema yang diberikan.`;
 
 export const generateChapterContent = async (prompt: string): Promise<string> => {
   try {
+    const model = getModel();
     const response: GenerateContentResponse = await model.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
@@ -151,6 +171,7 @@ export const generateChapterTitle = async (
 Judul Bab:`;
 
     try {
+        const model = getModel();
         const response: GenerateContentResponse = await model.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -174,6 +195,7 @@ export const generateSummary = async (chapterContent: string): Promise<string> =
     Ringkasan:`;
 
     try {
+        const model = getModel();
         const response: GenerateContentResponse = await model.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -188,6 +210,7 @@ export const generateSummary = async (chapterContent: string): Promise<string> =
 
 export const analyzeAssetWithSchema = async <T,>(prompt: string, base64Image: string | null, schema: any): Promise<T> => {
     try {
+        const model = getModel();
         const parts: any[] = [{ text: prompt }];
         if (base64Image) {
             parts.push({
@@ -249,6 +272,7 @@ export const analyzeWritingWithSchema = async (text: string) => {
     };
 
     try {
+        const model = getModel();
         const response: GenerateContentResponse = await model.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -340,6 +364,7 @@ ${chapterText}
     };
     
     try {
+        const model = getModel();
         const response: GenerateContentResponse = await model.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -681,6 +706,7 @@ Hanya berikan balasan dalam format JSON yang valid, sesuai dengan skema yang dib
     };
 
     try {
+        const model = getModel();
         const response: GenerateContentResponse = await model.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -725,6 +751,7 @@ ${changesString}
 `;
 
     try {
+        const model = getModel();
         const response: GenerateContentResponse = await model.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,

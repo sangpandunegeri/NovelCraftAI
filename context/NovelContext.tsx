@@ -1,11 +1,10 @@
-
-
-
 import React, { createContext, useReducer, useContext, useEffect, useState } from 'react';
 import type { NovelData, Action, Character, Location, NovelObject, Chapter, Reference } from '../types';
 import { getInitialNovelData } from '../constants';
+import { initializeGemini } from '../services/geminiService';
 
 const LOCAL_STORAGE_KEY = 'novelWriterAIData_react_v1';
+const API_KEY_STORAGE_KEY = 'geminiApiKey_react_v1';
 
 const novelReducer = (state: NovelData, action: Action): NovelData => {
   switch (action.type) {
@@ -159,22 +158,29 @@ interface NovelContextType {
   resetCounter: number;
   isAiWriterUnlocked: boolean;
   setIsAiWriterUnlocked: React.Dispatch<React.SetStateAction<boolean>>;
+  apiKey: string;
+  setApiKey: (key: string) => void;
 }
 
 const NovelContext = createContext<NovelContextType | undefined>(undefined);
 
 export const NovelProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize state by calling the factory function to get a clean object.
   const [novelData, dispatch] = useReducer(novelReducer, getInitialNovelData());
   const [resetCounter, setResetCounter] = useState(0);
   const [isAiWriterUnlocked, setIsAiWriterUnlocked] = useState(false);
+  const [apiKey, setApiKeyState] = useState('');
 
 
   useEffect(() => {
     try {
       const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+      const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
       if (savedData) {
         dispatch({ type: 'SET_NOVEL_DATA', payload: JSON.parse(savedData) });
+      }
+       if (savedKey) {
+          setApiKeyState(savedKey);
+          initializeGemini(savedKey);
       }
     } catch (e) {
       console.error("Gagal memuat data dari penyimpanan lokal", e);
@@ -188,6 +194,14 @@ export const NovelProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       console.error("Gagal menyimpan data ke penyimpanan lokal", e);
     }
   }, [novelData]);
+  
+  const setApiKey = (key: string) => {
+    const trimmedKey = key.trim();
+    setApiKeyState(trimmedKey);
+    localStorage.setItem(API_KEY_STORAGE_KEY, trimmedKey);
+    initializeGemini(trimmedKey);
+  };
+
 
   const saveProjectToFile = () => {
     const jsonString = JSON.stringify(novelData, null, 2);
@@ -233,10 +247,15 @@ export const NovelProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const resetApplication = () => {
     try {
-      dispatch({ type: 'RESET_NOVEL_DATA' });
-      setIsAiWriterUnlocked(false);
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
-      window.location.reload();
+      if (window.confirm('PERINGATAN: Tindakan ini akan menghapus SEMUA data proyek DAN API KEY Anda dari browser ini secara permanen. Ini tidak dapat diurungkan. Lanjutkan?')) {
+        dispatch({ type: 'RESET_NOVEL_DATA' });
+        setIsAiWriterUnlocked(false);
+        setApiKeyState('');
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        localStorage.removeItem(API_KEY_STORAGE_KEY);
+        localStorage.removeItem('novelCraftHasLoaded');
+        window.location.reload();
+      }
     } catch (e) {
       console.error("Gagal mereset aplikasi:", e);
       alert("Terjadi kesalahan saat mencoba mereset aplikasi. Silakan coba bersihkan data situs secara manual melalui pengaturan browser Anda.");
@@ -244,7 +263,7 @@ export const NovelProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <NovelContext.Provider value={{ novelData, dispatch, saveProjectToFile, loadProjectFromFile, resetProject, resetApplication, resetCounter, isAiWriterUnlocked, setIsAiWriterUnlocked }}>
+    <NovelContext.Provider value={{ novelData, dispatch, saveProjectToFile, loadProjectFromFile, resetProject, resetApplication, resetCounter, isAiWriterUnlocked, setIsAiWriterUnlocked, apiKey, setApiKey }}>
       {children}
     </NovelContext.Provider>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import AIWriter from './pages/AIWriter';
 import Manuscript from './pages/Manuscript';
@@ -7,10 +7,22 @@ import Database from './pages/Database';
 import ManuscriptAnalysis from './pages/ManuscriptAnalysis';
 import type { Page } from './types';
 import { useNovel } from './context/NovelContext';
+import SettingsModal from './components/SettingsModal';
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<Page>('manuscript-analysis');
-  const { resetCounter } = useNovel();
+  const [currentPage, setCurrentPage] = useState<Page>('ai-writer');
+  const { resetCounter, apiKey, setApiKey } = useNovel();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Buka modal pengaturan saat pertama kali dimuat jika tidak ada API key
+  useEffect(() => {
+    const hasLoadedBefore = localStorage.getItem('novelCraftHasLoaded');
+    if (!apiKey && !hasLoadedBefore) {
+      setIsSettingsOpen(true);
+      localStorage.setItem('novelCraftHasLoaded', 'true');
+    }
+  }, [apiKey]);
+
 
   const renderPage = () => {
     switch (currentPage) {
@@ -31,10 +43,20 @@ const App: React.FC = () => {
 
   return (
     <div className="flex">
-      <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <Sidebar 
+        currentPage={currentPage} 
+        setCurrentPage={setCurrentPage}
+        onSettingsClick={() => setIsSettingsOpen(true)}
+      />
       <main className="ml-64 flex-1 p-8 overflow-y-auto h-screen">
         {renderPage()}
       </main>
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        currentApiKey={apiKey}
+        onSave={setApiKey}
+      />
     </div>
   );
 };
