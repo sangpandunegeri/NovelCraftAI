@@ -1,7 +1,7 @@
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 import type { Character, Location, NovelObject } from '../types';
 
-const API_KEY = process.env.API_KEY;
+const API_KEY = AIzaSyDLCjC3k8fa9nLP0yMhu3pN9lTo8-lJhvQ;
 
 if (!API_KEY) {
   throw new Error("API_KEY environment variable not set");
