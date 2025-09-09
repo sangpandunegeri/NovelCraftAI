@@ -1,0 +1,5 @@
+{
+  "name": "NovelCraft AI",
+  "description": "Asisten menulis novel bertenaga AI. Membantu dengan fondasi cerita, arsitektur plot, pembuatan bab, pembangunan aset dari teks atau gambar, dan analisis naskah, semuanya didukung oleh Gemini API.",
+  "requestFramePermissions": []
+}
